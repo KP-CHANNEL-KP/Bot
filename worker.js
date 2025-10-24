@@ -31,31 +31,27 @@ async function onNewChatMember(chatId, newMembers, env) {
 // 2. ပုံမှန် Message တွေကို ကိုင်တွယ်တဲ့ Function (Auto Replay Logic)
 async function onMessage(message, env) {
     const chatId = message.chat.id;
+    // စာလုံးအကြီး/အသေး ဂရုမစိုက်ရအောင် ပြောင်းထားသည်
     const text = message.text ? message.text.toLowerCase() : ''; 
     
     let responseText = "";
 
-    // >>> ဤနေရာတွင် Auto Replay Logic ကို စတင်ရေးပါ (သင်၏ မေးခွန်း/အဖြေများ) <<<
+    // >>> Auto Replay Logic (သင်၏ မေးခွန်း/အဖြေများ) <<<
     
-    // 1. FAQ (မေးလေ့ရှိသော မေးခွန်းများ)
     if (text.includes("ဈေးနှုန်း") || text.includes("ဘယ်လောက်လဲ")) { 
         responseText = "လက်ရှိ ဝန်ဆောင်မှု ဈေးနှုန်းများမှာ ၁၀၀၀ ကျပ် မှ ၅၀၀၀ ကျပ် အတွင်းရှိပါသည်။";
     } 
     else if (text.includes("လိပ်စာ") || text.includes("ဆိုင်")) {
         responseText = "ကျွန်တော်တို့ရဲ့ ဆိုင်လိပ်စာကတော့ ရန်ကုန်၊ မင်္ဂလာတောင်ညွန့်မြို့နယ်မှာ တည်ရှိပါတယ်။";
     }
-    else if (text.includes("ဆက်သွယ်")) {
-        responseText = "ဖုန်းနံပါတ်: 09-xxxxxxx (သို့မဟုတ်) Email: example@email.com ကို ဆက်သွယ်နိုင်ပါတယ်။";
-    }
-    // 2. နှုတ်ဆက်ခြင်း/အမေးအဖြေ ကိုင်တွယ်ခြင်း
     else if (text.includes("နေကောင်းလား")) { 
         responseText = "ကျန်းမာပါတယ်ခင်ဗျား။ သင်ရော နေကောင်းရဲ့လား။";
     } 
-    // 3. Command များကို ကိုင်တွယ်ခြင်း
+    // Command များကို ကိုင်တွယ်ခြင်း
     else if (text === '/start') {
         responseText = "မင်္ဂလာပါရှင်! ကျွန်မကတော့ အလိုအလျောက် ပြန်ဖြေပေးတဲ့ Bot ဖြစ်ပါတယ်။"; 
     }
-    // 4. အခြားသော စာများအတွက် Default ပြန်ဖြေခြင်း
+    // အခြားသော စာများအတွက် Default ပြန်ဖြေခြင်း
     else {
         responseText = "ကျွန်တော် နားမလည်သေးပါဘူး။ ကျေးဇူးပြုပြီး မေးခွန်းအပြည့်အစုံကို ရိုက်ထည့်ပေးပါ (သို့မဟုတ်) `/start` ကို ပို့ပါ။"; 
     }
@@ -70,7 +66,7 @@ async function onMessage(message, env) {
     return new Response('OK');
 }
 
-// 3. Webhook ကို ကိုင်တွယ်ဖြေရှင်းမယ့် Listener (GitHub Deploy အတွက် အရေးကြီးဆုံး)
+// 3. Webhook ကို ကိုင်တွယ်ဖြေရှင်းမယ့် Listener (Cloudflare က ဒီအပိုင်းကို လိုအပ်သည်)
 export default {
 	async fetch(request, env) {
 		const secret = request.headers.get('X-Telegram-Bot-Api-Secret-Token');
@@ -82,14 +78,12 @@ export default {
 			try {
 				const update = await request.json();
                 
-                // အဖွဲ့ဝင်အသစ် ဝင်ရောက်ခြင်းကို စစ်ဆေးသည်
 				if (update.message) {
                     if (update.message.new_chat_members) {
                         const chatId = update.message.chat.id;
                         const newMembers = update.message.new_chat_members;
                         return onNewChatMember(chatId, newMembers, env);
                     } else if (update.message.text) {
-                        // ပုံမှန်စာသား မက်ဆေ့ချ်ကို ကိုင်တွယ်သည် (Auto Replay Logic)
                         return onMessage(update.message, env);
                     }
 				}
